@@ -1,8 +1,22 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { IError, IException } from './base.exception';
+import {
+    Catch,
+    ExceptionFilter,
+    HttpException,
+    HttpStatus,
+    Inject,
+    LoggerService,
+} from '@nestjs/common';
 import { status } from '@grpc/grpc-js';
+import { throwError } from 'rxjs';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-export class RpcExceptionHandler implements IException {
+@Catch(HttpException)
+export class Http2GrpcException implements ExceptionFilter<HttpException> {
+    constructor(
+        @Inject(WINSTON_MODULE_NEST_PROVIDER)
+        private readonly logger: LoggerService,
+    ) {}
+
     static HttpStatusCode: Record<number, number> = {
         // standard gRPC error mapping
         // https://cloud.google.com/apis/design/errors#handling_errors
@@ -31,32 +45,24 @@ export class RpcExceptionHandler implements IException {
         [HttpStatus.PRECONDITION_FAILED]: status.FAILED_PRECONDITION,
     };
 
-    private statusCode: status;
-    private response: string;
-
-    constructor(exception: HttpException) {
+    catch(exception: HttpException) {
         const statusCode = exception.getStatus();
-        const response = exception.getResponse() as IError;
+        const errorResponse = exception.getResponse();
 
-        if (response.status_code == undefined) {
-            if (response['code'] != undefined) {
-                response.status_code = response['code'];
-            } else if (response['statusCode'] != undefined) {
-                response.status_code = response['statusCode'];
-            } else {
-                response.status_code = statusCode;
-            }
+        if (exception.getStatus() >= 500) {
+            this.logger.error(exception);
         }
 
-        this.statusCode = RpcExceptionHandler.HttpStatusCode[statusCode];
-        this.response = JSON.stringify(response);
-    }
-
-    getStatusCode(): status {
-        return this.statusCode;
-    }
-
-    getResponse(): string {
-        return this.response;
+        return throwError(() => ({
+            code: Http2GrpcException.HttpStatusCode[statusCode],
+            message: JSON.stringify({
+                status_code:
+                    errorResponse['statusCode'] ||
+                    errorResponse['code'] ||
+                    statusCode,
+                message: errorResponse['message'] || errorResponse['error'],
+                errors: errorResponse['errors'] ?? {},
+            }),
+        }));
     }
 }

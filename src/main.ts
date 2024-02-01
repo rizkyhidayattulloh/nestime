@@ -1,48 +1,36 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { resolve } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
-
     const config = app.get(ConfigService);
 
-    app.connectMicroservice<MicroserviceOptions>(
-        {
-            transport: Transport.GRPC,
-            options: {
-                package: ['user'],
-                protoPath: [resolve('proto/user/user.proto')],
-                url: `${config.get('app.grpc.host')}:${config.get(
-                    'app.grpc.port',
-                )}`,
-            },
-        },
-        {
-            inheritAppConfig: true,
-        },
-    );
+    useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
+    app.connectMicroservice<MicroserviceOptions>(config.get('app.grpc'), {
+        inheritAppConfig: true,
+    });
 
     app.connectMicroservice<MicroserviceOptions>(
         {
             transport: Transport.KAFKA,
             options: {
                 client: {
-                    brokers: [
-                        `${config.get('app.kafka.host')}:${config.get(
-                            'app.kafka.port',
-                        )}`,
-                    ],
+                    brokers: config.get('app.kafka.brokers'),
                 },
                 consumer: {
-                    groupId: 'my-app',
                     allowAutoTopicCreation: true,
+                    groupId: config.get('app.kafka.consumer.groupId'),
                 },
                 producer: {
                     createPartitioner: Partitioners.LegacyPartitioner,
+                },
+                subscribe: {
+                    fromBeginning: true,
                 },
             },
         },
@@ -52,7 +40,6 @@ async function bootstrap() {
     );
 
     await app.startAllMicroservices();
-
-    await app.listen(process.env.HTTP_PORT);
+    await app.listen(config.get('app.http.port'));
 }
 bootstrap();

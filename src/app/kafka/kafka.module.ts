@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { DemoController } from './controllers/demo.controller';
+import { SampleController } from '@/app/kafka/handlers/sample/sample.controller';
 
 @Module({
-    controllers: [DemoController],
+    controllers: [SampleController],
 })
 export class KafkaModule {}
