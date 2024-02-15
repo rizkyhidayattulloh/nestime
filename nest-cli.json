@@ -3,6 +3,9 @@
     "collection": "@nestjs/schematics",
     "sourceRoot": "src",
     "compilerOptions": {
+        "assets": [
+            { "include": "providers/microservice/kafka/schema-registry/**/*", "watchAssets": true }
+        ],
         "deleteOutDir": true
     }
 }

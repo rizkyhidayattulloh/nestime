@@ -4,6 +4,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
 import { useContainer } from 'class-validator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -11,6 +12,7 @@ async function bootstrap() {
 
     useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
+    app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
     app.connectMicroservice<MicroserviceOptions>(config.get('app.grpc'), {
         inheritAppConfig: true,
     });
@@ -29,9 +31,9 @@ async function bootstrap() {
                 producer: {
                     createPartitioner: Partitioners.LegacyPartitioner,
                 },
-                subscribe: {
-                    fromBeginning: true,
-                },
+                // subscribe: {
+                //     fromBeginning: true,
+                // },
             },
         },
         {

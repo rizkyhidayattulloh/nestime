@@ -1,4 +1,4 @@
-import { ExtendedPrismaClient } from '@/prisma/prisma.extension';
+import { ExtendedPrismaClient } from '@/providers/database/prisma/prisma.extension';
 import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {

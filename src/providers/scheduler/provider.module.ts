@@ -5,4 +5,4 @@ import { ScheduleModule } from '@nestjs/schedule';
     imports: [ScheduleModule.forRoot()],
     providers: [],
 })
-export class SchedulerProvider {}
+export class SchedulerProviderModule {}
