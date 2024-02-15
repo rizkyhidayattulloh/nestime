@@ -26,5 +26,8 @@ export default registerAs('app', () => ({
         consumer: {
             groupId: 'my-app',
         },
+        schemaRegistry: {
+            host: process.env.SCHEMA_REGISTRY_HOST,
+        },
     },
 }));

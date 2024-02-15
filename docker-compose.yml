@@ -10,76 +10,81 @@ services:
             POSTGRES_USER: '${DB_USERNAME}'
             POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
         volumes:
-            - 'my-app-postgres:/var/lib/postgresql/data'
+            - 'nestime-postgres:/var/lib/postgresql/data'
         networks:
-            - my-app
+            - nestime
 
     redis:
         image: 'redis:alpine'
         ports:
             - '${REDIS_PORT:-6379}:6379'
         volumes:
-            - 'my-app-redis:/data'
+            - 'nestime-redis:/data'
         networks:
-            - my-app
-
-    adminer:
-        image: adminer
-        ports:
-            - '9090:8080'
-        networks:
-            - my-app
-
+            - nestime
     zookeeper:
         image: confluentinc/cp-zookeeper:latest
+        hostname: zookeeper
         container_name: zookeeper
+        ports:
+            - "2181:2181"
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
-            ZOOKEEPER_TICK_TIME: 2000
-        ports:
-            - '2181:2181'
+            ZOOKEEPER_SERVER_ID: 1
+        volumes:
+            - nestime-zookeeper-data:/var/lib/zookeeper/data
+            - nestime-zookeeper-log:/var/lib/zookeeper/log
 
     schema-registry:
         image: confluentinc/cp-schema-registry:latest
         hostname: schema-registry
         depends_on:
-            - kafka-broker-1
+            - broker
         ports:
             - '8081:8081'
         environment:
             SCHEMA_REGISTRY_HOST_NAME: schema-registry
-            SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
-            SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
-            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-broker-1:9092,PLAINTEXT_INTERNAL://localhost:19092
+            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "broker:19092"
             SCHEMA_REGISTRY_DEBUG: 'true'
+        volumes:
+            - nestime-schema-registry:/var/lib/schema-registry
 
-    kafka-broker-1:
+    broker:
         image: confluentinc/cp-kafka:latest
-        hostname: kafka-broker-1
+        hostname: broker
+        container_name: broker
         ports:
-            - '19092:19092'
+            - "9092:9092"
+            - "29092:29092"
+        environment:
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:19092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092,DOCKER://host.docker.internal:29092
+            KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+            KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+            KAFKA_BROKER_ID: 1
+            KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+            KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+            KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
         depends_on:
             - zookeeper
-        environment:
-            KAFKA_BROKER_ID: 1
-            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092,PLAINTEXT_INTERNAL://localhost:19092
-            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
         volumes:
-            -   'my-app-kafka:/var/lib/kafka/data'
+            - nestime-broker-1:/var/lib/kafka/data
 
 volumes:
-    my-app-kafka:
+    nestime-zookeeper-data:
         driver: local
-    my-app-mongo:
+    nestime-zookeeper-log:
         driver: local
-    my-app-postgres:
+    nestime-schema-registry:
         driver: local
-    my-app-redis:
+    nestime-broker-1:
+        driver: local
+    nestime-postgres:
+        driver: local
+    nestime-redis:
         driver: local
 
 networks:
-    my-app:
+    nestime:
         driver: bridge

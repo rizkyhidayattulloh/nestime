@@ -1,3 +1,4 @@
+import { DemoJob } from '@/cmd/jobs/demo.job';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +15,7 @@ import { ConfigService } from '@nestjs/config';
             name: 'demo',
         }),
     ],
-    providers: [],
+    providers: [DemoJob],
     exports: [BullModule],
 })
-export class QueueProvider {}
+export class BullProviderModule {}

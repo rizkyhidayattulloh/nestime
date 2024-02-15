@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "SampleCreate",
+  "namespace": "sample",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    }
+  ]
+}
