@@ -4,6 +4,7 @@ import { config } from './config';
 import 'winston-daily-rotate-file';
 import { HttpModule } from '@/app/http/http.module';
 import { ProviderModule } from '@/providers/provider.module';
+import { GrpcModule } from '@/app/grpc/grpc.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { ProviderModule } from '@/providers/provider.module';
         ProviderModule,
         // register you app layer modules here
         HttpModule,
+        GrpcModule,
     ],
 })
 export class AppModule {}

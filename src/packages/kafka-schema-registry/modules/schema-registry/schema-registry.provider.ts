@@ -1,11 +1,11 @@
 import { COMPATIBILITY } from '@kafkajs/confluent-schema-registry';
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { SchemaRegistryClient } from '@/packages/kafka-schema-registry/schema-registry.client';
+import { SchemaRegistryClient } from '@/packages/kafka-schema-registry/modules/schema-registry/schema-registry.client';
 import {
     SchemaRegistryConfig,
     SchemaRegistrySchema,
-} from '@/packages/kafka-schema-registry/common/interfaces';
-import { SCHEMA_REGISTRY_CONFIG } from '@/packages/kafka-schema-registry/common/constants';
+} from '@/packages/kafka-schema-registry/modules/schema-registry/schema-registry.interface';
+import { SCHEMA_REGISTRY_CONFIG } from '@/packages/kafka-schema-registry/constants';
 
 @Injectable()
 export class SchemaRegistryProvider implements OnModuleInit {

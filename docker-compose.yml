@@ -2,6 +2,7 @@ version: '3.7'
 services:
     postgres:
         image: postgres
+        container_name: nestime-postgres
         ports:
             - '${DB_PORT}:5432'
         environment:
@@ -9,50 +10,45 @@ services:
             POSTGRES_DB: '${DB_DATABASE}'
             POSTGRES_USER: '${DB_USERNAME}'
             POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
-        volumes:
-            - 'nestime-postgres:/var/lib/postgresql/data'
         networks:
             - nestime
 
     redis:
         image: 'redis:alpine'
+        container_name: nestime-redis
         ports:
             - '${REDIS_PORT:-6379}:6379'
-        volumes:
-            - 'nestime-redis:/data'
         networks:
             - nestime
+
     zookeeper:
         image: confluentinc/cp-zookeeper:latest
         hostname: zookeeper
-        container_name: zookeeper
+        container_name: nestime-zookeeper
         ports:
             - "2181:2181"
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
             ZOOKEEPER_SERVER_ID: 1
-        volumes:
-            - nestime-zookeeper-data:/var/lib/zookeeper/data
-            - nestime-zookeeper-log:/var/lib/zookeeper/log
 
     schema-registry:
         image: confluentinc/cp-schema-registry:latest
         hostname: schema-registry
+        container_name: nestime-schema-registry
         depends_on:
             - broker
+            - zookeeper
         ports:
             - '8081:8081'
         environment:
             SCHEMA_REGISTRY_HOST_NAME: schema-registry
             SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "broker:19092"
             SCHEMA_REGISTRY_DEBUG: 'true'
-        volumes:
-            - nestime-schema-registry:/var/lib/schema-registry
 
     broker:
         image: confluentinc/cp-kafka:latest
         hostname: broker
-        container_name: broker
+        container_name: nestime-broker
         ports:
             - "9092:9092"
             - "29092:29092"
@@ -68,22 +64,6 @@ services:
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
         depends_on:
             - zookeeper
-        volumes:
-            - nestime-broker-1:/var/lib/kafka/data
-
-volumes:
-    nestime-zookeeper-data:
-        driver: local
-    nestime-zookeeper-log:
-        driver: local
-    nestime-schema-registry:
-        driver: local
-    nestime-broker-1:
-        driver: local
-    nestime-postgres:
-        driver: local
-    nestime-redis:
-        driver: local
 
 networks:
     nestime:
