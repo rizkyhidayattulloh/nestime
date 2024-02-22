@@ -1,7 +1,8 @@
 import { SchemaRegistry } from '@kafkajs/confluent-schema-registry';
 import { ClientKafka, KafkaOptions } from '@nestjs/microservices';
 import { from, lastValueFrom, Observable } from 'rxjs';
-import { SchemaRegistryClient } from '@/packages/kafka-schema-registry/schema-registry.client';
+import { SchemaRegistryClient } from '@/packages/kafka-schema-registry/modules/schema-registry/schema-registry.client';
+import { Kafka } from 'kafkajs';
 
 export class KafkaService extends ClientKafka {
     private readonly schemaRegistry: SchemaRegistry;
@@ -29,9 +30,19 @@ export class KafkaService extends ClientKafka {
     }
 
     private async encode(topic: string, payload: any) {
-        const id = await this.schemaRegistry.getLatestSchemaId(
-            `${topic}-value`,
-        );
+        const subject = `${topic}-value`;
+        const id =
+            this.schemaRegistry.cache?.getLatestRegistryId(subject) ??
+            (await this.schemaRegistry
+                .getLatestSchemaId(subject)
+                .then((id) => {
+                    this.schemaRegistry.cache?.setLatestRegistryId(subject, id);
+                    return id;
+                })
+                .catch((e) => {
+                    this.logger.error(e);
+                    return null;
+                }));
 
         if (!payload.value) {
             payload = { value: payload };
@@ -62,5 +73,9 @@ export class KafkaService extends ClientKafka {
                 : message.value;
         }
         return message;
+    }
+
+    async getClient(): Promise<Kafka> {
+        return super.createClient();
     }
 }

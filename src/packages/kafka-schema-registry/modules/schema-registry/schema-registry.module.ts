@@ -1,11 +1,11 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { SchemaRegistryProvider } from '@/packages/kafka-schema-registry/schema-registry.provider';
-import { SchemaRegistryClient } from '@/packages/kafka-schema-registry/schema-registry.client';
+import { SchemaRegistryProvider } from '@/packages/kafka-schema-registry/modules/schema-registry/schema-registry.provider';
+import { SchemaRegistryClient } from '@/packages/kafka-schema-registry/modules/schema-registry/schema-registry.client';
 import {
     SchemaRegistryModuleAsyncOptions,
     SchemaRegistryModuleOptions,
-} from '@/packages/kafka-schema-registry/common/interfaces';
-import { SCHEMA_REGISTRY_CONFIG } from '@/packages/kafka-schema-registry/common/constants';
+} from '@/packages/kafka-schema-registry/modules/schema-registry/schema-registry.interface';
+import { SCHEMA_REGISTRY_CONFIG } from '@/packages/kafka-schema-registry/constants';
 
 @Module({})
 export class SchemaRegistryModule {

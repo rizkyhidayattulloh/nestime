@@ -1,5 +1,5 @@
 import { Inject, Injectable, PipeTransform } from '@nestjs/common';
-import { KafkaService } from '@/packages/kafka-schema-registry/kafka.service';
+import { KafkaService } from '@/packages/kafka-schema-registry/modules/schema-registry/kafka.service';
 
 @Injectable()
 export class PayloadDecodePipe implements PipeTransform {

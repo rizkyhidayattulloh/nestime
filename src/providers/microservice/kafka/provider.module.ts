@@ -3,12 +3,15 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { Partitioners } from 'kafkajs';
 import {
+    KAFKA_REGISTRY_CONFIG,
     KafkaService,
     SchemaRegistryClient,
     SchemaRegistryModule,
 } from '@/packages/kafka-schema-registry';
 import { schemas } from '@/providers/microservice/kafka/schema-registry';
 import { readAVSCAsync } from '@kafkajs/confluent-schema-registry';
+import { KafkaRegistryProvider } from '@/packages/kafka-schema-registry/modules/kafka-registry/kafka-registry.provider';
+import { topics } from '@/providers/microservice/kafka/topic-registry';
 
 @Module({
     imports: [
@@ -65,6 +68,15 @@ import { readAVSCAsync } from '@kafkajs/confluent-schema-registry';
                 },
             ],
         }),
+    ],
+    providers: [
+        {
+            provide: KAFKA_REGISTRY_CONFIG,
+            useValue: {
+                topics,
+            },
+        },
+        KafkaRegistryProvider,
     ],
 })
 export class KafkaProviderModule {}

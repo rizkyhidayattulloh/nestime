@@ -4,9 +4,19 @@ import { APP_FILTER } from '@nestjs/core';
 import { GrpcException } from '@/app/grpc/exceptions/grpc.exception';
 import { Http2GrpcException } from '@/app/grpc/exceptions/http2grpc.exception';
 import { SampleModule } from '@/modules/sample/sample.module';
+import { GrpcReflectionModule } from 'nestjs-grpc-reflection';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
-    imports: [SampleModule],
+    imports: [
+        GrpcReflectionModule.registerAsync({
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => {
+                return configService.get('app.grpc');
+            },
+        }),
+        SampleModule,
+    ],
     controllers: [SampleController],
     providers: [
         {
