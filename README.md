@@ -39,8 +39,4 @@ grpc://localhost:5051
 
 - [Rizky Nur Hidayattulloh](https://github.com/rizkyhidayattulloh)
 
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
 ## Open PR are welcome :D
