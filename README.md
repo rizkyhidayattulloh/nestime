@@ -13,6 +13,12 @@ Timedoor's NestJS starter template
 
 ## Setup Project
 
+Copy `.env.example` to `.env`
+
+```bash
+cp .env.example .env
+```
+
 ### Docker
 
 ```bash
