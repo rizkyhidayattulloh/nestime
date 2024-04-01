@@ -18,6 +18,8 @@ export default registerAs('app', () => ({
             loader: {
                 oneofs: true,
                 keepCase: true,
+                defaults: true,
+                includeDirs: [resolve('proto')],
             },
         },
     }),

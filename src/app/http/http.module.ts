@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
-import { SampleController } from '@/app/http/handlers/sample/sample.controller';
-import { SampleModule } from '@/modules/sample/sample.module';
+import { HttpV1Module } from '@/app/http/v1/http.v1.module';
 
 @Module({
-    imports: [SampleModule],
-    controllers: [SampleController],
+    imports: [HttpV1Module],
 })
 export class HttpModule {}
