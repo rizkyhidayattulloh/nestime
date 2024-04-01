@@ -7,12 +7,13 @@ import {
     ValidatorConstraintInterface,
 } from 'class-validator';
 import { CustomPrismaService } from 'nestjs-prisma';
+import { PRISMA_SERVICE } from '@/providers/database/prisma/prisma.constant';
 
 @Injectable()
 @ValidatorConstraint({ name: 'IsExists', async: true })
 export class IsExists implements ValidatorConstraintInterface {
     constructor(
-        @Inject('PrismaService')
+        @Inject(PRISMA_SERVICE)
         private readonly prisma: CustomPrismaService<ExtendedPrismaClient>,
     ) {}
 
